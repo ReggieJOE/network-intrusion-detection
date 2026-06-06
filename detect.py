@@ -65,3 +65,31 @@ y_test = test_df['attack_cat']
 
 print(f"\nFeatures shape: {X_train.shape}")
 print(f"Label classes: {y_train.unique()}")
+
+from xgboost import XGBClassifier
+from sklearn.preprocessing import LabelEncoder
+
+label_encoder = LabelEncoder()
+y_train_encoded = label_encoder.fit_transform(y_train)
+y_test_encoded = label_encoder.transform(y_test)
+
+print("Class mapping:")
+for i, cls in enumerate(label_encoder.classes_):
+    print(f"{i}. {cls}")
+
+print("\nTraining XGBoost...")
+xgb_model = XGBClassifier(
+    n_estimators=100,
+    max_depth=6,
+    learning_rate=0.1,
+    random_state=42,
+    eval_metric= 'mlogloss'
+)
+
+xgb_model.fit(X_train, y_train_encoded)
+
+xgb_preds = xgb_model.predict(X_test)
+xgb_preds_labels = label_encoder.inverse_transform(xgb_preds)
+
+print("\nXGBoost Classification Report:")
+print(classification_report(y_test, xgb_preds_labels))
